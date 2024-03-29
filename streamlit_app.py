@@ -1,40 +1,73 @@
-import altair as alt
-import numpy as np
-import pandas as pd
 import streamlit as st
+import requests
+import time
+import random
+# Function to call the API for v2
+def call_apiv2(prompt):
+    start_time = time.time()  # Record start time
+    url = "https://api.worqhat.com/api/ai/images/generate/v2"
+    payload = {
+        "orientation": "square",
+        "output_type": "url",
+        "prompt": [prompt]
+    }
+    headers = {
+        "Authorization": "Bearer sk-02e44d2ccb164c738a6c4a65dbf75e89",
+        "Content-Type": "application/json"
+    }
+    response = requests.post(url, json=payload, headers=headers)
+    end_time = time.time()  # Record end time
+    duration = end_time - start_time  # Calculate duration
+    if response.status_code == 200:
+        return response.json()['image'], round(duration, 2)
+    else:
+        return None, round(duration, 2)
 
-"""
-# Welcome to Streamlit!
+# Function to call the API for v3
+def call_apiv3(prompt):
+    start_time = time.time()  # Record start time
+    url = "https://api.worqhat.com/api/ai/images/generate/v3"
+    payload = {
+        "orientation": "square",
+        "output_type": "url",
+        "prompt": [prompt]
+    }
+    headers = {
+        "Authorization": "Bearer sk-02e44d2ccb164c738a6c4a65dbf75e89",
+        "Content-Type": "application/json"
+    }
+    response = requests.post(url, json=payload, headers=headers)
+    end_time = time.time()  # Record end time
+    duration = end_time - start_time  # Calculate duration
+    if response.status_code == 200:
+        return response.json()['image'], round(duration, 2)
+    else:
+        return None, round(duration, 2)
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:.
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+st.title("AI Image Generator")
+st.write("Test these features and more on [Worqhat](https://worqhat.com).")
+st.write("Checkout our [Documentation](https://docs.worqhat.com/introduction)")
 
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
-
-num_points = st.slider("Number of points in spiral", 1, 10000, 1100)
-num_turns = st.slider("Number of turns in spiral", 1, 300, 31)
-
-indices = np.linspace(0, 1, num_points)
-theta = 2 * np.pi * num_turns * indices
-radius = indices
-
-x = radius * np.cos(theta)
-y = radius * np.sin(theta)
-
-df = pd.DataFrame({
-    "x": x,
-    "y": y,
-    "idx": indices,
-    "rand": np.random.randn(num_points),
-})
-
-st.altair_chart(alt.Chart(df, height=700, width=700)
-    .mark_point(filled=True)
-    .encode(
-        x=alt.X("x", axis=None),
-        y=alt.Y("y", axis=None),
-        color=alt.Color("idx", legend=None, scale=alt.Scale()),
-        size=alt.Size("rand", legend=None, scale=alt.Scale(range=[1, 150])),
-    ))
+prompt = st.text_input("Enter prompt:")
+col1, col2 = st.columns([1,1])
+with col1:
+    if st.button("Send"):
+        st.write("Generating Image...")
+        response_v2, duration_v2 = call_apiv2(prompt)
+        with col1:
+            st.image(response_v2, caption=f"Generated Image (v2) - Time taken: {duration_v2} seconds", use_column_width=True)
+        response_v3, duration_v3 = call_apiv3(prompt)
+        with col2:
+            st.image(response_v3, caption=f"Generated Image (v3) - Time taken: {duration_v3} seconds", use_column_width=True)
+        
+with col2:
+    if st.button("Surprise Me !"):
+        st.write("Generating Image...")
+        prompts=["ethereal glowing holographic crystalised moth on a frosty spring morning","high quality, 8K Ultra HD, A beautiful double exposure that combines an goddess silhouette with sunset coast, sunset coast should serve as the underlying backdrop, with its details incorporated into the goddess , crisp lines, The background is monochrome, sharp focus, double exposure, awesome full color","A cat bunny hybrid","whimiscally cute and adorable little baby foxy cuteness overload, wonderfully dreamy atmosphere filled with a whimsical mix of pastel colors, with, golden shaded background, huge flower explosion"]
+        prompt = random.choice(prompts)  
+        response_v2, duration_v2 = call_apiv2(prompt)
+        with col1:
+            st.image(response_v2, caption=f"Generated Image (v2) - Time taken: {duration_v2} seconds", use_column_width=True)
+        response_v3, duration_v3 = call_apiv3(prompt)
+        with col2:
+            st.image(response_v3, caption=f"Generated Image (v3) - Time taken: {duration_v3} seconds", use_column_width=True)
